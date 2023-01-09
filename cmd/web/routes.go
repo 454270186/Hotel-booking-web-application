@@ -27,6 +27,14 @@ func routes(app *config.AppConfig) http.Handler {
 	// set up routes
 	mux.Get("/", handler.Repo.Home)
 	mux.Get("/about", handler.Repo.About)
+	mux.Get("/generals-quarters", handler.Repo.Generals)
+	mux.Get("/majors-suite", handler.Repo.Majors)
+	mux.Get("/search-availability", handler.Repo.Availability)
+	mux.Get("/contact", handler.Repo.Contact)
 
+	// 处理静态文件，让网页可以访问到static文件夹里的文件
+	// 这一步非常重要！！
+	fileServer := http.FileServer(http.Dir("./static"))
+	mux.Handle("/static/*", http.StripPrefix("/static", fileServer))
 	return mux
 }
