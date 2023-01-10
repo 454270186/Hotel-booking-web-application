@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/454270186/Hotel-booking-web-application/pkg/Models"
 	"github.com/454270186/Hotel-booking-web-application/pkg/config"
+	"github.com/justinas/nosurf"
 	"html/template"
 	"log"
 	"net/http"
@@ -17,13 +18,14 @@ func NewTemplates(a *config.AppConfig) {
 	app = a
 }
 
-func AddDefaultData(td *Models.TemplateData) *Models.TemplateData {
-
+func AddDefaultData(td *Models.TemplateData, r *http.Request) *Models.TemplateData {
+	td.CSRFToken = nosurf.Token(r) // make sure to go through the CSRF protection.
+	// any post without this CSRFToken will be refused
 	return td
 }
 
 // RenderTemplate is the Templates render
-func RenderTemplate(w http.ResponseWriter, html string, td *Models.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, html string, td *Models.TemplateData) {
 	// create template cache from cache or create new
 	var tc map[string]*template.Template
 	if app.UseCache {
@@ -40,7 +42,7 @@ func RenderTemplate(w http.ResponseWriter, html string, td *Models.TemplateData)
 
 	buf := new(bytes.Buffer)
 
-	td = AddDefaultData(td)
+	td = AddDefaultData(td, r)
 
 	_ = t.Execute(buf, td)
 

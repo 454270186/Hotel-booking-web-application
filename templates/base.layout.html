@@ -107,10 +107,10 @@
             })();
 
 
-            const elem = document.getElementById('reservation-dates');
-            const rangePicker = new DateRangePicker(elem, {
-                format: "yyyy-mm-dd",
-            });
+            // const elem = document.getElementById('reservation-dates');
+            // const rangePicker = new DateRangePicker(elem, {
+            //     format: "yyyy-mm-dd",
+            // });
 
             function notify(msg, msgType) {
                 notie.alert({
@@ -192,7 +192,7 @@
                         title = "",
                     } = c;
 
-                    const { value: formValues } = await Swal.fire({
+                    const { value: result } = await Swal.fire({
                         title: title,
                         html: msg,
                         backdrop: false,
@@ -217,8 +217,16 @@
                         }
                     })
 
-                    if (formValues) {
-                        Swal.fire(JSON.stringify(formValues))
+                    if (result) {
+                        if (result.dismiss !== Swal.DismissReason.cancel) {
+                            if (result !== "") {
+                                c.callback(result)
+                            } else {
+                                c.callback(false)
+                            }
+                        } else {
+                            c.callback(false)
+                        }
                     }
                 }
 
