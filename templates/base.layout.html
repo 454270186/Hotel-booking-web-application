@@ -19,7 +19,7 @@
     <body>
 
         <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-            <a class="navbar-brand" href="#">Navbar</a>
+            <a class="navbar-brand" href="/">Navbar</a>
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -106,30 +106,6 @@
                 }, false);
             })();
 
-            document.getElementById("colorButton").addEventListener("click", function () {
-                let html = `
-        <form id="check-availability-form" action="" method="post" novalidate class="needs-validation">
-            <div class="form-row">
-                <div class="col">
-                    <div class="form-row" id="reservation-dates-modal">
-                        <div class="col">
-                            <input disabled required class="form-control" type="text" name="start" id="start" placeholder="Arrival">
-                        </div>
-                        <div class="col">
-                            <input disabled required class="form-control" type="text" name="end" id="end" placeholder="Departure">
-                        </div>
-
-                    </div>
-                </div>
-            </div>
-        </form>
-        `;
-
-                attention.custom({
-                    title: 'Choose your dates',
-                    msg: html,
-                });
-            })
 
             const elem = document.getElementById('reservation-dates');
             const rangePicker = new DateRangePicker(elem, {
