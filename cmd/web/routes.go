@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/454270186/Hotel-booking-web-application/pkg/config"
-	"github.com/454270186/Hotel-booking-web-application/pkg/handler"
+	"github.com/454270186/Hotel-booking-web-application/internal/config"
+	"github.com/454270186/Hotel-booking-web-application/internal/handler"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"net/http"

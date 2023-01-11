@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/454270186/Hotel-booking-web-application/pkg/config"
-	"github.com/454270186/Hotel-booking-web-application/pkg/handler"
-	"github.com/454270186/Hotel-booking-web-application/pkg/render"
+	"github.com/454270186/Hotel-booking-web-application/internal/config"
+	"github.com/454270186/Hotel-booking-web-application/internal/handler"
+	"github.com/454270186/Hotel-booking-web-application/internal/render"
 	"github.com/alexedwards/scs/v2"
 	"log"
 	"net/http"

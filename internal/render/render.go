@@ -3,8 +3,8 @@ package render
 import (
 	"bytes"
 	"fmt"
-	"github.com/454270186/Hotel-booking-web-application/pkg/Models"
-	"github.com/454270186/Hotel-booking-web-application/pkg/config"
+	"github.com/454270186/Hotel-booking-web-application/internal/Models"
+	"github.com/454270186/Hotel-booking-web-application/internal/config"
 	"github.com/justinas/nosurf"
 	"html/template"
 	"log"

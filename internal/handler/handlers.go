@@ -3,9 +3,9 @@ package handler
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/454270186/Hotel-booking-web-application/pkg/Models"
-	"github.com/454270186/Hotel-booking-web-application/pkg/config"
-	"github.com/454270186/Hotel-booking-web-application/pkg/render"
+	"github.com/454270186/Hotel-booking-web-application/internal/Models"
+	"github.com/454270186/Hotel-booking-web-application/internal/config"
+	"github.com/454270186/Hotel-booking-web-application/internal/render"
 	"log"
 	"net/http"
 )
