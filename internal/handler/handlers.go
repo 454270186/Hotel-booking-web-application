@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/454270186/Hotel-booking-web-application/internal/Models"
 	"github.com/454270186/Hotel-booking-web-application/internal/config"
+	"github.com/454270186/Hotel-booking-web-application/internal/forms"
 	"github.com/454270186/Hotel-booking-web-application/internal/render"
 	"log"
 	"net/http"
@@ -51,8 +52,45 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
+// Reservation renders a make reservation page and display a form
 func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
-	render.RenderTemplate(w, r, "make-reservation.page.html", &Models.TemplateData{})
+	render.RenderTemplate(w, r, "make-reservation.page.html", &Models.TemplateData{
+		Form: forms.New(nil), // associates with the form in make-reservation page
+	})
+}
+
+func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
+	err := r.ParseForm() // 获得表单post的数据
+	if err != nil {
+		log.Println(err)
+		return
+	}
+
+	// store the form data
+	reservation := Models.Reservation{
+		FirstName: r.Form.Get("first_name"),
+		LastName:  r.Form.Get("last_name"),
+		Email:     r.Form.Get("email"),
+		Phone:     r.Form.Get("phone"),
+	}
+
+	// store the data posted by form
+	form := forms.New(r.PostForm)
+
+	form.Has("first_name", r)
+
+	if !form.Valid() {
+		data := make(map[string]interface{})
+		data["reservation"] = reservation // store the reservation-data and pass it to template
+
+		// re-render this page
+		render.RenderTemplate(w, r, "make-reservation.page.html", &Models.TemplateData{
+			Form: form,
+			Data: data,
+		})
+
+		return
+	}
 }
 
 // Generals renders the room page
