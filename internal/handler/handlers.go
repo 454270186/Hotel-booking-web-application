@@ -85,6 +85,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 	// Backend validation
 	form.Required("first_name", "last_name", "email") // check input is blank or not
 	form.MinLength("first_name", 5, r)                // specific validation for the first_name
+	form.IsEmail("email")                             // check if email address is valid or not
 
 	if !form.Valid() {
 		data := make(map[string]interface{})
