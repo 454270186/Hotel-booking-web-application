@@ -38,6 +38,7 @@ func routes(app *config.AppConfig) http.Handler {
 
 	mux.Get("/make-reservation", handler.Repo.Reservation)
 	mux.Post("/make-reservation", handler.Repo.PostReservation)
+	mux.Get("/reservation-summary", handler.Repo.ReservationSummary)
 
 	// 处理静态文件，让网页可以访问到static文件夹里的文件
 	// 这一步非常重要！！

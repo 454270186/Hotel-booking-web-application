@@ -99,6 +99,13 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
+
+	// if all input is validated, store the input in Session which is for reservation-summary page to use
+	m.App.Session.Put(r.Context(), "reservation", reservation)
+
+	// In order to avoid people from accidentally submitting the form twice
+	// Everytime receive a POST request, should direct Users to another page
+	http.Redirect(w, r, "reservation-summary", http.StatusSeeOther)
 }
 
 // Generals renders the room page
@@ -148,4 +155,19 @@ func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 // Contact renders the contact page
 func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
 	render.RenderTemplate(w, r, "contact.page.html", &Models.TemplateData{})
+}
+
+// ReservationSummary renders the reservation-summary page
+func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) {
+	reservation, ok := m.App.Session.Get(r.Context(), "reservation").(Models.Reservation)
+	if !ok {
+		log.Println("Cannot get the reservation information items.")
+		return
+	}
+	data := make(map[string]interface{})
+	data["reservation"] = reservation
+
+	render.RenderTemplate(w, r, "reservation-summary.page.html", &Models.TemplateData{
+		Data: data,
+	})
 }
