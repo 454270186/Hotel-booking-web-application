@@ -19,8 +19,14 @@ func NewTemplates(a *config.AppConfig) {
 }
 
 func AddDefaultData(td *Models.TemplateData, r *http.Request) *Models.TemplateData {
-	td.CSRFToken = nosurf.Token(r) // make sure to go through the CSRF protection.
+	//@brief: Everytime renders page, add these default data
+
+	// make sure to go through the CSRF protection.
 	// any post without this CSRFToken will be refused
+	td.CSRFToken = nosurf.Token(r)
+	td.Flash = app.Session.PopString(r.Context(), "flash")
+	td.Error = app.Session.PopString(r.Context(), "error")
+	td.Warning = app.Session.PopString(r.Context(), "warning")
 	return td
 }
 

@@ -52,12 +52,13 @@ func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// Reservation renders a make reservation page and display a form
+// Reservation renders a make-reservation page and display a form
 func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
 	var emptyReservation Models.Reservation
 	data := make(map[string]interface{})
 	data["reservation"] = emptyReservation
 	// initialize empty data and form-data to make-reservation page
+	// so that it can display blank in every input when first time get in this page
 	render.RenderTemplate(w, r, "make-reservation.page.html", &Models.TemplateData{
 		Data: data,
 		Form: forms.New(nil),
@@ -91,7 +92,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		data := make(map[string]interface{})
 		data["reservation"] = reservation // store the reservation-data and pass it to template
 
-		// re-render this page
+		// re-render this page to show some error
 		render.RenderTemplate(w, r, "make-reservation.page.html", &Models.TemplateData{
 			Form: form,
 			Data: data,
@@ -162,8 +163,14 @@ func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) 
 	reservation, ok := m.App.Session.Get(r.Context(), "reservation").(Models.Reservation)
 	if !ok {
 		log.Println("Cannot get the reservation information items.")
+		m.App.Session.Put(r.Context(), "error", "Error to get reservation form session.")
+		http.Redirect(w, r, "/", http.StatusTemporaryRedirect)
 		return
 	}
+
+	// when have got the reservation in Session, remove it from Session
+	m.App.Session.Remove(r.Context(), "reservation")
+
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
 
