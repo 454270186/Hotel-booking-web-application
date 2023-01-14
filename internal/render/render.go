@@ -2,12 +2,12 @@ package render
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/454270186/Hotel-booking-web-application/internal/Models"
 	"github.com/454270186/Hotel-booking-web-application/internal/config"
 	"github.com/justinas/nosurf"
 	"html/template"
-	"log"
 	"net/http"
 	"path/filepath"
 )
@@ -32,7 +32,7 @@ func AddDefaultData(td *Models.TemplateData, r *http.Request) *Models.TemplateDa
 }
 
 // RenderTemplate is the Templates render
-func RenderTemplate(w http.ResponseWriter, r *http.Request, html string, td *Models.TemplateData) {
+func RenderTemplate(w http.ResponseWriter, r *http.Request, html string, td *Models.TemplateData) error {
 	// create template cache from cache or create new
 	var tc map[string]*template.Template
 	if app.UseCache {
@@ -44,7 +44,9 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, html string, td *Mod
 	// get requested template from cache
 	t, ok := tc[html]
 	if !ok {
-		log.Fatal("could not get template from templates cache")
+		//log.Fatal("could not get template from templates cache")
+
+		return errors.New("could not get template from templates cache")
 	}
 
 	buf := new(bytes.Buffer)
@@ -57,7 +59,10 @@ func RenderTemplate(w http.ResponseWriter, r *http.Request, html string, td *Mod
 	_, err := buf.WriteTo(w)
 	if err != nil {
 		fmt.Println("Error writing template to browser.", err)
+		return err
 	}
+
+	return nil
 }
 
 // CreateTemplateCache creates a template cache as a map
