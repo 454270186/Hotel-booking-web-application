@@ -53,7 +53,7 @@ func getRoutes() http.Handler {
 
 	// use middleware
 	mux.Use(middleware.Recoverer)
-	mux.Use(NoSurf)
+	//mux.Use(NoSurf)
 	mux.Use(SessionLoad)
 
 	// set up routes
