@@ -6,10 +6,12 @@ import (
 	"github.com/454270186/Hotel-booking-web-application/internal/Models"
 	"github.com/454270186/Hotel-booking-web-application/internal/config"
 	"github.com/454270186/Hotel-booking-web-application/internal/handler"
+	"github.com/454270186/Hotel-booking-web-application/internal/helpers"
 	"github.com/454270186/Hotel-booking-web-application/internal/render"
 	"github.com/alexedwards/scs/v2"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
@@ -17,6 +19,8 @@ const portNumber = ":8080"
 
 var app config.AppConfig
 var session *scs.SessionManager
+var infoLog *log.Logger
+var errorLog *log.Logger
 
 func main() {
 	err := run()
@@ -47,6 +51,11 @@ func run() error {
 	// change this to true when in production
 	app.InProduction = false
 
+	infoLog = log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	app.InfoLog = infoLog
+	errorLog = log.New(os.Stdout, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+	app.ErrorLog = errorLog
+
 	session = scs.New()
 	session.Lifetime = 24 * time.Hour
 	session.Cookie.Persist = true
@@ -62,12 +71,16 @@ func run() error {
 
 	app.TemplateCache = tc
 	app.UseCache = false // do not use the Template cache, render from disk
+	// new and set up app config for render
 	render.NewTemplates(&app)
 
 	// New and set repository for handler
 	var repo *handler.Repository
 	repo = handler.NewRepo(&app)
 	handler.NewHandler(repo)
+
+	// new and set up app config for helpers
+	helpers.NewHelpers(&app)
 
 	return nil
 }
