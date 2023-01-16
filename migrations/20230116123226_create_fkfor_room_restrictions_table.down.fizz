@@ -1,0 +1,1 @@
+drop_foreign_key("room_restrictions", "room_restrictions_reservations_id_fk", {"if_exists": true})
