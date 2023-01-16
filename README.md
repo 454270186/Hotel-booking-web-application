@@ -7,3 +7,4 @@ This is the repository for my booking and reservation project
 - Uses [alex edwards SCS session management](https://github.com/alexedwards/scs)
 - Uses [Nosurf](https://github.com/justinas/nosurf)
 - Uses Email validator - [Govalidator](https://github.com/asaskevich/govalidator)
+- Uses [Go-Buffalo Soda](https://github.com/gobuffalo/buffalo) Database migrator
