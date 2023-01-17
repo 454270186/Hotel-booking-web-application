@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/454270186/Hotel-booking-web-application/internal/Models"
 	"github.com/454270186/Hotel-booking-web-application/internal/config"
+	"github.com/454270186/Hotel-booking-web-application/internal/driver"
 	"github.com/454270186/Hotel-booking-web-application/internal/handler"
 	"github.com/454270186/Hotel-booking-web-application/internal/helpers"
 	"github.com/454270186/Hotel-booking-web-application/internal/render"
@@ -23,11 +24,11 @@ var infoLog *log.Logger
 var errorLog *log.Logger
 
 func main() {
-	err := run()
+	db, err := run()
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	defer db.SQL.Close()
 	//http.HandleFunc("/", handler.Repo.Home)
 	//http.HandleFunc("/about", handler.Repo.About)
 
@@ -45,9 +46,13 @@ func main() {
 
 }
 
-func run() error {
+func run() (*driver.DB, error) {
 	// What I am to store in Session
 	gob.Register(Models.Reservation{})
+	gob.Register(Models.User{})
+	gob.Register(Models.Room{})
+	gob.Register(Models.Restriction{})
+	gob.Register(Models.RoomRestriction{})
 	// change this to true when in production
 	app.InProduction = false
 
@@ -63,24 +68,27 @@ func run() error {
 	session.Cookie.Secure = app.InProduction
 	app.Session = session
 
+	// connect to database
+	log.Println("Connect to database...")
+	db, err := driver.ConnectSQL("host=localhost port=5432 dbname=bookings user=postgres password=2021110003")
+	if err != nil {
+		log.Fatal("Cannot connect to database, Dying...")
+	}
+	log.Println("Connected to database")
+
 	tc, err := render.CreateTemplateCache()
 	if err != nil {
 		log.Fatal(err)
-		return err
+		return nil, err
 	}
 
 	app.TemplateCache = tc
 	app.UseCache = false // do not use the Template cache, render from disk
-	// new and set up app config for render
-	render.NewTemplates(&app)
 
-	// New and set repository for handler
-	var repo *handler.Repository
-	repo = handler.NewRepo(&app)
-	handler.NewHandler(repo)
+	repo := handler.NewRepo(&app, db)
+	handler.NewHandler(repo) // new and set repository for handler
+	render.NewRenderer(&app) // new and set up app config for render
+	helpers.NewHelpers(&app) // new and set up app config for helpers
 
-	// new and set up app config for helpers
-	helpers.NewHelpers(&app)
-
-	return nil
+	return db, nil
 }

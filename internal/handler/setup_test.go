@@ -47,7 +47,7 @@ func getRoutes() http.Handler {
 
 	app.TemplateCache = tc
 	app.UseCache = true // do not use the Template cache, render from disk
-	render.NewTemplates(&app)
+	render.NewRenderer(&app)
 
 	// New and set repository for handler
 	var repo *Repository

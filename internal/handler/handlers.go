@@ -5,9 +5,12 @@ import (
 	"fmt"
 	"github.com/454270186/Hotel-booking-web-application/internal/Models"
 	"github.com/454270186/Hotel-booking-web-application/internal/config"
+	"github.com/454270186/Hotel-booking-web-application/internal/driver"
 	"github.com/454270186/Hotel-booking-web-application/internal/forms"
 	"github.com/454270186/Hotel-booking-web-application/internal/helpers"
 	"github.com/454270186/Hotel-booking-web-application/internal/render"
+	"github.com/454270186/Hotel-booking-web-application/internal/repository"
+	"github.com/454270186/Hotel-booking-web-application/internal/repository/dbrepo"
 	"net/http"
 )
 
@@ -15,12 +18,14 @@ var Repo *Repository
 
 type Repository struct {
 	App *config.AppConfig
+	DB  repository.DatabaseRepo
 }
 
 // NewRepo creates a new repository
-func NewRepo(a *config.AppConfig) *Repository {
+func NewRepo(a *config.AppConfig, db *driver.DB) *Repository {
 	return &Repository{
 		App: a,
+		DB:  dbrepo.NewPostgresRepo(a, db.SQL),
 	}
 }
 
@@ -31,13 +36,13 @@ func NewHandler(r *Repository) {
 
 // Home is the home page handler
 func (m *Repository) Home(w http.ResponseWriter, r *http.Request) {
-	_ = render.RenderTemplate(w, r, "home.page.html", &Models.TemplateData{})
+	_ = render.Template(w, r, "home.page.html", &Models.TemplateData{})
 }
 
 // About is the about page handler
 func (m *Repository) About(w http.ResponseWriter, r *http.Request) {
 	// render the template
-	_ = render.RenderTemplate(w, r, "about.page.html", &Models.TemplateData{})
+	_ = render.Template(w, r, "about.page.html", &Models.TemplateData{})
 }
 
 // Reservation renders a make-reservation page and display a form
@@ -47,7 +52,7 @@ func (m *Repository) Reservation(w http.ResponseWriter, r *http.Request) {
 	data["reservation"] = emptyReservation
 	// initialize empty data and form-data to make-reservation page
 	// so that it can display blank in every input when first time get in this page
-	_ = render.RenderTemplate(w, r, "make-reservation.page.html", &Models.TemplateData{
+	_ = render.Template(w, r, "make-reservation.page.html", &Models.TemplateData{
 		Data: data,
 		Form: forms.New(nil),
 	})
@@ -81,7 +86,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		data["reservation"] = reservation // store the reservation-data and pass it to template
 
 		// re-render this page to show some error
-		_ = render.RenderTemplate(w, r, "make-reservation.page.html", &Models.TemplateData{
+		_ = render.Template(w, r, "make-reservation.page.html", &Models.TemplateData{
 			Form: form,
 			Data: data,
 		})
@@ -99,17 +104,17 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 
 // Generals renders the room page
 func (m *Repository) Generals(w http.ResponseWriter, r *http.Request) {
-	_ = render.RenderTemplate(w, r, "generals.page.html", &Models.TemplateData{})
+	_ = render.Template(w, r, "generals.page.html", &Models.TemplateData{})
 }
 
 // Majors renders the room page
 func (m *Repository) Majors(w http.ResponseWriter, r *http.Request) {
-	_ = render.RenderTemplate(w, r, "majors.page.html", &Models.TemplateData{})
+	_ = render.Template(w, r, "majors.page.html", &Models.TemplateData{})
 }
 
 // Availability renders the Book Now page
 func (m *Repository) Availability(w http.ResponseWriter, r *http.Request) {
-	_ = render.RenderTemplate(w, r, "search-availability.page.html", &Models.TemplateData{})
+	_ = render.Template(w, r, "search-availability.page.html", &Models.TemplateData{})
 }
 
 // PostAvailability handle the post from form in search-availability page
@@ -144,7 +149,7 @@ func (m *Repository) AvailabilityJSON(w http.ResponseWriter, r *http.Request) {
 
 // Contact renders the contact page
 func (m *Repository) Contact(w http.ResponseWriter, r *http.Request) {
-	_ = render.RenderTemplate(w, r, "contact.page.html", &Models.TemplateData{})
+	_ = render.Template(w, r, "contact.page.html", &Models.TemplateData{})
 }
 
 // ReservationSummary renders the reservation-summary page
@@ -163,7 +168,7 @@ func (m *Repository) ReservationSummary(w http.ResponseWriter, r *http.Request) 
 	data := make(map[string]interface{})
 	data["reservation"] = reservation
 
-	_ = render.RenderTemplate(w, r, "reservation-summary.page.html", &Models.TemplateData{
+	_ = render.Template(w, r, "reservation-summary.page.html", &Models.TemplateData{
 		Data: data,
 	})
 }
