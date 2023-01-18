@@ -12,6 +12,8 @@ import (
 	"github.com/454270186/Hotel-booking-web-application/internal/repository"
 	"github.com/454270186/Hotel-booking-web-application/internal/repository/dbrepo"
 	"net/http"
+	"strconv"
+	"time"
 )
 
 var Repo *Repository
@@ -65,12 +67,38 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sd := r.Form.Get("start_date")
+	ed := r.Form.Get("end_date")
+
+	// parse string to time-object
+	layout := "2006-01-02"
+	startDate, err := time.Parse(layout, sd)
+	if err != nil {
+		helpers.ServeError(w, err)
+		return
+	}
+	endDate, err := time.Parse(layout, ed)
+	if err != nil {
+		helpers.ServeError(w, err)
+		return
+	}
+
+	// convert room_id(string) to int
+	roomID, err := strconv.Atoi(r.Form.Get("room_id"))
+	if err != nil {
+		helpers.ServeError(w, err)
+		return
+	}
+
 	// store the form data
 	reservation := Models.Reservation{
 		FirstName: r.Form.Get("first_name"),
 		LastName:  r.Form.Get("last_name"),
 		Email:     r.Form.Get("email"),
 		Phone:     r.Form.Get("phone"),
+		StartDate: startDate,
+		EndDate:   endDate,
+		RoomID:    roomID,
 	}
 
 	// store the data posted by form
@@ -94,6 +122,25 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// if form is valid, insert data into database
+	newReservationID, err := m.DB.InsertReservation(reservation)
+	if err != nil {
+		helpers.ServeError(w, err)
+		return
+	}
+
+	restriction := Models.RoomRestriction{
+		StartDate:     startDate,
+		EndDate:       endDate,
+		RoomID:        roomID,
+		ReservationID: newReservationID,
+		RestrictionID: 1,
+	}
+	err = m.DB.InsertRoomRestriction(restriction)
+	if err != nil {
+		helpers.ServeError(w, err)
+		return
+	}
 	// if all input is validated, store the input in Session which is for reservation-summary page to use
 	m.App.Session.Put(r.Context(), "reservation", reservation)
 
