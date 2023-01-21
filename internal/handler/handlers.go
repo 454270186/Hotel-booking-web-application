@@ -3,6 +3,7 @@ package handler
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/454270186/Hotel-booking-web-application/internal/Models"
 	"github.com/454270186/Hotel-booking-web-application/internal/config"
 	"github.com/454270186/Hotel-booking-web-application/internal/driver"
@@ -29,6 +30,14 @@ func NewRepo(a *config.AppConfig, db *driver.DB) *Repository {
 	return &Repository{
 		App: a,
 		DB:  dbrepo.NewPostgresRepo(a, db.SQL),
+	}
+}
+
+// NewTestRepo creates a new repository for test
+func NewTestRepo(a *config.AppConfig) *Repository {
+	return &Repository{
+		App: a,
+		DB:  dbrepo.NewTestingRepo(a),
 	}
 }
 
@@ -112,7 +121,7 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 	// convert room_id(string) to int
 	roomID, err := strconv.Atoi(r.Form.Get("room_id"))
 	if err != nil {
-		helpers.ServeError(w, err)
+		m.App.Session.Put(r.Context(), "error", "invalid data!")
 		return
 	}
 
@@ -168,6 +177,36 @@ func (m *Repository) PostReservation(w http.ResponseWriter, r *http.Request) {
 		helpers.ServeError(w, err)
 		return
 	}
+
+	// send notifications by email - first to guest
+	htmlMSG := fmt.Sprintf(`
+		<strong>Reservation Confirmation</strong><br>
+		Dear %s:<br>
+		This is confirm your reservation from %s to %s.
+`, reservation.FirstName, reservation.StartDate.Format("2006-01-02"), reservation.EndDate.Format("2006-01-02"))
+
+	msg := Models.MailData{
+		To:      reservation.Email,
+		From:    "me@here.com",
+		Subject: "Reservation Confirmation",
+		Content: htmlMSG,
+	}
+	m.App.MailChan <- msg
+
+	// send notifications by email - second to property owner
+	htmlMSGForOwner := fmt.Sprintf(`
+	<strong>Reservation Confirmation</strong><br>
+	You have a reservation of %s from %s to %s.
+`, reservation.Room.RoomName, reservation.StartDate.Format("2006-01-02"), reservation.EndDate.Format("2006-01-02"))
+
+	msgToOwner := Models.MailData{
+		To:      "Owner@ow.com",
+		From:    "me@here.com",
+		Subject: "Reservation Notification",
+		Content: htmlMSGForOwner,
+	}
+	m.App.MailChan <- msgToOwner
+
 	// if all input is validated, store the input in Session which is for reservation-summary page to use
 	m.App.Session.Put(r.Context(), "reservation", reservation)
 

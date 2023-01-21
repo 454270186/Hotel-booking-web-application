@@ -51,7 +51,7 @@ func getRoutes() http.Handler {
 
 	// New and set repository for handler
 	var repo *Repository
-	repo = NewRepo(&app)
+	repo = NewTestRepo(&app)
 	NewHandler(repo)
 
 	// go-chi
