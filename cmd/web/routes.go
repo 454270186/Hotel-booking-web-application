@@ -43,6 +43,10 @@ func routes(app *config.AppConfig) http.Handler {
 	mux.Post("/make-reservation", handler.Repo.PostReservation)
 	mux.Get("/reservation-summary", handler.Repo.ReservationSummary)
 
+	mux.Get("/user/login", handler.Repo.ShowLogin)
+	mux.Post("/user/login", handler.Repo.PostShowLogin)
+	mux.Get("/user/logout", handler.Repo.Logout)
+
 	// 处理静态文件，让网页可以访问到static文件夹里的文件
 	// 这一步非常重要！！
 	fileServer := http.FileServer(http.Dir("./static"))
