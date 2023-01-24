@@ -2,4 +2,4 @@
 database.yml
 run.bat
 
-./static/admin
+./static/admin/
