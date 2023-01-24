@@ -11,3 +11,8 @@ This is the repository for my booking and reservation project
 - Uses [Go-Buffalo Soda](https://github.com/gobuffalo/buffalo) Database migrator
 - Uses [MailHog](https://github.com/mailhog/MailHog) for email-sending test
 - Uses Go email sender [Go-Simple-Mail](https://github.com/xhit/go-simple-mail)
+
+
+## Test for reservation list
+Get all reservations stored in database and list them on the admin page.
+![test](./img/reservations-list.png)
