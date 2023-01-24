@@ -1,3 +1,5 @@
 .idea
 database.yml
 run.bat
+
+./static/admin
