@@ -229,10 +229,63 @@ func (m *postgresDBRepo) AllReservations() ([]Models.Reservation, error) {
 
 	query := `
 		select r.id, r.first_name, r.last_name, r.email, r.phone, r.start_date,
+		r.end_date, r.room_id, r.created_at, r.updated_at, r.processed,
+		rm.id, rm.room_name
+		from reservations r
+		left join rooms rm on (r.room_id = rm.id)
+		order by r.start_date asc
+`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return reservations, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var i Models.Reservation
+		err := rows.Scan(
+			&i.ID,
+			&i.FirstName,
+			&i.LastName,
+			&i.Email,
+			&i.Phone,
+			&i.StartDate,
+			&i.EndDate,
+			&i.RoomID,
+			&i.CreatedAt,
+			&i.UpdatedAt,
+			&i.Processed,
+			&i.Room.ID,
+			&i.Room.RoomName,
+		)
+		if err != nil {
+			return reservations, err
+		}
+
+		reservations = append(reservations, i)
+	}
+	if err = rows.Err(); err != nil {
+		return reservations, err
+	}
+
+	return reservations, nil
+}
+
+// AllNewReservations returns all new reservations
+func (m *postgresDBRepo) AllNewReservations() ([]Models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var reservations []Models.Reservation
+
+	query := `
+		select r.id, r.first_name, r.last_name, r.email, r.phone, r.start_date,
 		r.end_date, r.room_id, r.created_at, r.updated_at, 
 		rm.id, rm.room_name
 		from reservations r
 		left join rooms rm on (r.room_id = rm.id)
+		where processed = 0
 		order by r.start_date asc
 `
 
@@ -269,4 +322,43 @@ func (m *postgresDBRepo) AllReservations() ([]Models.Reservation, error) {
 	}
 
 	return reservations, nil
+}
+
+// GetReservationByID returns reservation by given ID
+func (m *postgresDBRepo) GetReservationByID(id int) (Models.Reservation, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var res Models.Reservation
+
+	query := `
+		select r.id, r.first_name, r.last_name, r.email, r.phone, r.start_date,
+		r.end_date, r.room_id, r.created_at, r.updated_at, r.processed,
+		rm.id, rm.room_name
+		from reservations r
+		left join rooms rm on (r.room_id = rm.id)
+		where r.id = $1;
+`
+
+	row := m.DB.QueryRowContext(ctx, query, id)
+	err := row.Scan(
+		&res.ID,
+		&res.FirstName,
+		&res.LastName,
+		&res.Email,
+		&res.Phone,
+		&res.StartDate,
+		&res.EndDate,
+		&res.RoomID,
+		&res.CreatedAt,
+		&res.UpdatedAt,
+		&res.Processed,
+		&res.Room.ID,
+		&res.Room.RoomName,
+	)
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
 }

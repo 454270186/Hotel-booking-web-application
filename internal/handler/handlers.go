@@ -16,6 +16,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -423,7 +424,6 @@ func (m *Repository) PostShowLogin(w http.ResponseWriter, r *http.Request) {
 	form.Required("email", "password")
 	form.IsEmail("email")
 	if !form.Valid() {
-		// TODO --- take user back to page
 		render.Template(w, r, "login.page.html", &Models.TemplateData{
 			Form: form,
 		})
@@ -452,16 +452,29 @@ func (m *Repository) Logout(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/user/login", http.StatusSeeOther)
 }
 
+// AdminDashboard shows the admin dashboard
 func (m *Repository) AdminDashboard(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "admin-dashboard.page.html", &Models.TemplateData{})
 }
 
+// AdminNewReservations shows all new reservations in admin tool
 func (m *Repository) AdminNewReservations(w http.ResponseWriter, r *http.Request) {
-	render.Template(w, r, "admin-new-reservations.page.html", &Models.TemplateData{})
+	reservations, err := m.DB.AllNewReservations()
+	if err != nil {
+		helpers.ServeError(w, err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["reservations"] = reservations
+
+	render.Template(w, r, "admin-new-reservations.page.html", &Models.TemplateData{
+		Data: data,
+	})
 }
 
+// AdminAllReservations shows all reservations in admin tool
 func (m *Repository) AdminAllReservations(w http.ResponseWriter, r *http.Request) {
-	// TODO -- before render page, get all reservations from database
 	reservations, err := m.DB.AllReservations()
 	if err != nil {
 		helpers.ServeError(w, err)
@@ -475,6 +488,37 @@ func (m *Repository) AdminAllReservations(w http.ResponseWriter, r *http.Request
 	})
 }
 
+func (m *Repository) AdminShowReservation(w http.ResponseWriter, r *http.Request) {
+	exploded := strings.Split(r.RequestURI, "/")
+
+	id, err := strconv.Atoi(exploded[4])
+	if err != nil {
+		helpers.ServeError(w, err)
+		return
+	}
+
+	src := exploded[3]
+	stringMap := make(map[string]string)
+	stringMap["src"] = src
+
+	// get reservation from database
+	res, err := m.DB.GetReservationByID(id)
+	if err != nil {
+		helpers.ServeError(w, err)
+		return
+	}
+
+	data := make(map[string]interface{})
+	data["reservation"] = res
+
+	render.Template(w, r, "admin-reservations-show.page.html", &Models.TemplateData{
+		StringMap: stringMap,
+		Data:      data,
+		Form:      forms.New(nil),
+	})
+}
+
+// AdminReservationsCalendar displays the reservations calendar
 func (m *Repository) AdminReservationsCalendar(w http.ResponseWriter, r *http.Request) {
 	render.Template(w, r, "admin-reservations-calendar.page.html", &Models.TemplateData{})
 }
