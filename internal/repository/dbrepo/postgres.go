@@ -416,3 +416,81 @@ func (m *postgresDBRepo) UpdateProcessedForReservation(id, processed int) error 
 	return nil
 
 }
+
+// AllRooms returns a slice of all rooms
+func (m *postgresDBRepo) AllRooms() ([]Models.Room, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var rooms []Models.Room
+
+	query := `select id, room_name, created_at, updated_at from rooms order by room_name;`
+
+	rows, err := m.DB.QueryContext(ctx, query)
+	if err != nil {
+		return rooms, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var room Models.Room
+		err = rows.Scan(
+			&room.ID,
+			&room.RoomName,
+			&room.CreatedAt,
+			&room.UpdatedAt,
+		)
+		if err != nil {
+			return rooms, err
+		}
+		rooms = append(rooms, room)
+	}
+
+	if err = rows.Err(); err != nil {
+		return rooms, err
+	}
+
+	return rooms, nil
+}
+
+// GetRestrictionsForRoomByDate returns restrictions for a room by date range
+func (m *postgresDBRepo) GetRestrictionsForRoomByDate(roomID int, start, end time.Time) ([]Models.RoomRestriction, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	var roomRestrictions []Models.RoomRestriction
+
+	query := `
+		select id, coalesce(reservation_id, 0) , restriction_id, room_id, start_date, end_date
+		from room_restrictions where $1 < end_date and $2 > start_date
+		and room_id = $3;
+`
+	rows, err := m.DB.QueryContext(ctx, query, start, end, roomID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var r Models.RoomRestriction
+		err = rows.Scan(
+			&r.ID,
+			&r.ReservationID,
+			&r.RestrictionID,
+			&r.RoomID,
+			&r.StartDate,
+			&r.EndDate,
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		roomRestrictions = append(roomRestrictions, r)
+	}
+
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return roomRestrictions, nil
+}
