@@ -21,3 +21,7 @@ Get all reservations stored in database and list them on the admin page.
 - Display the number of days according to the actual month
 ![test](./img/calendar.png)
 Bootsrtap 版本冲突问题太难解决啦！！！！心态崩了
+
+
+## Very Very Very Silly Deployment
+depoyed in Aliyun http://47.115.230.21:8080/
